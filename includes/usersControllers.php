@@ -104,6 +104,15 @@
             }
         }
 
+        public function deleteUser($id){
+            $stmt = $this->con->prepare("delete from users where id = ?");
+            $stmt->bind_param("i", $id);
+            if($stmt->execute())
+                return true;
+            return false;
+
+        }
+
         private function isEmailExist($email){
             $stmt = $this->con->prepare("select id from users where email = ? ");
             $stmt->bind_param("s",$email);
