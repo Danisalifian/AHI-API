@@ -4,17 +4,21 @@ use \Psr\Http\Message\ResponseInterface as Response;
 
 require '../vendor/autoload.php';
 
-require '../includes/agronomisControllers.php';
+require '../includes/usersControllers.php';
 
-$app = new \Slim\App;
+$app = new \Slim\App([
+    'settings' =>[
+        'displayErrorDetails'=> true
+    ]
+]);
 
 /*
-    endpoint : createAgronomis
+    endpoint : createUser
     parameters : email, password, nama, area, alamat
     method : POST
 */
 
-$app->post('/createAgronomis',function(Request $request, Response $response){
+$app->post('/createUser',function(Request $request, Response $response){
     
     if(!haveEmptyParameters(array('email','password','nama','area','alamat'), $response)){
         $request_data = $request->getParsedBody();
@@ -27,9 +31,9 @@ $app->post('/createAgronomis',function(Request $request, Response $response){
 
         $hash_password = password_hash($password, PASSWORD_DEFAULT);
 
-        $db = new agronomisControllers;
+        $db = new usersControllers;
 
-        $result = $db->createAgronomis($email,$hash_password,$nama,$area,$alamat);
+        $result = $db->createUser($email,$hash_password,$nama,$area,$alamat);
 
         if($result == USER_CREATED){
 
@@ -67,6 +71,67 @@ $app->post('/createAgronomis',function(Request $request, Response $response){
                 ->withHeader('Content-type', 'application/json')
                 ->withStatus(422);
 
+        }
+    }
+
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(422);
+});
+
+$app->post('/userLogin',function(Request $request, Response $response){
+    
+    if(!haveEmptyParameters(array('email','password'),$response)){
+        $request_data = $request->getParsedBody();
+
+        $email = $request_data['email'];
+        $password = $request_data['password'];
+
+        $db = new usersControllers;
+
+        $result = $db->userLogin($email,$password);
+
+        if($result == USER_AUTHENTICATED){
+
+            $user = $db->getUserByEmail($email);
+            $response_data = array();
+
+            $response_data['error'] = false;
+            $response_data['message'] = 'Login Successfull';
+            $response_data['user'] = $user;
+
+            $response->write(json_encode($response_data));
+
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);
+
+        } else if($result == USER_NOT_FOUND){
+
+            $response_data = array();
+
+            $response_data['error'] = true;
+            $response_data['message'] = 'User not exist';
+
+            $response->write(json_encode($response_data));
+
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);
+
+        } else if($result == USER_PASSWORD_DO_NOT_MATCH){
+
+            $response_data = array();
+
+            $response_data['error'] = true;
+            $response_data['message'] = 'Invalid credential';
+
+            $response->write(json_encode($response_data));
+
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);
+                
         }
     }
 
