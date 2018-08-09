@@ -78,6 +78,32 @@
             return $user;
         }
 
+        public function updateUser($email, $nama, $area, $alamat, $id){
+            $stmt = $this->con->prepare("update users set email = ?, nama = ?, area = ?, alamat = ? where id = ?");
+            $stmt->bind_param("sssss", $email, $nama, $area, $alamat, $id);
+            if($stmt->execute())
+                return true;
+            return false;
+        }
+
+        public function updatePassword($currentpassword, $newpassword, $email){
+            $hashed_password = $this->getUsersPasswordByEmail($email);
+
+            if(password_verify($currentpassword, $hashed_password)){
+
+                $hash_password = password_hash($newpassword, PASSWORD_DEFAULT);
+                $stmt = $this->con->prepare("update users set password = ? where email = ?");
+                $stmt->bind_param("ss", $hash_password, $email);
+
+                if($stmt->execute())
+                    return PASSWORD_CHANGED;
+                return PASSWORD_DO_NOT_CHANGED;
+
+            } else {
+                return PASSWORD_DO_NOT_MATCH;
+            }
+        }
+
         private function isEmailExist($email){
             $stmt = $this->con->prepare("select id from users where email = ? ");
             $stmt->bind_param("s",$email);

@@ -20,7 +20,7 @@ $app = new \Slim\App([
 
 $app->post('/createUser',function(Request $request, Response $response){
     
-    if(!haveEmptyParameters(array('email','password','nama','area','alamat'), $response)){
+    if(!haveEmptyParameters(array('email','password','nama','area','alamat'), $request, $response)){
         $request_data = $request->getParsedBody();
 
         $email = $request_data['email'];
@@ -81,7 +81,7 @@ $app->post('/createUser',function(Request $request, Response $response){
 
 $app->post('/userLogin',function(Request $request, Response $response){
     
-    if(!haveEmptyParameters(array('email','password'),$response)){
+    if(!haveEmptyParameters(array('email','password'), $request, $response)){
         $request_data = $request->getParsedBody();
 
         $email = $request_data['email'];
@@ -158,10 +158,102 @@ $app->get('/allUsers', function(Request $request, Response $response){
         ->withStatus(200);
 });
 
-function haveEmptyParameters($required_params, $response){
+$app->put('/updateUser/{id}', function (Request $request, Response $response, array $args){
+
+    $id = $args['id'];
+
+    if(!haveEmptyParameters(array('email', 'nama', 'area', 'alamat', 'id'), $request, $response)){
+        $request_data = $request->getParsedBody();
+        $email = $request_data['email'];
+        $nama = $request_data['nama'];
+        $area = $request_data['area'];
+        $alamat = $request_data['alamat'];
+        $id = $request_data['id'];
+
+        $db = new usersControllers;
+
+        if($db->updateUser($email, $nama, $area, $alamat, $id)){
+            $response_data = array();
+            $response_data['error'] = false;
+            $response_data['message'] = 'User updated successfully';
+            $user = $db->getUserByEmail($email);
+            $response_data['user'] = $user;
+
+            $response->write(json_encode($response_data));
+
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);
+        } else {
+            $response_data = array();
+            $response_data['error'] = true;
+            $response_data['message'] = 'Please try again later';
+            $user = $db->getUserByEmail($email);
+            $response_data['user'] = $user;
+
+            $response->write(json_encode($response_data));
+
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);
+        }
+
+    }
+
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(200);
+});
+
+$app->put('/updatePassword', function (Request $request, Response $response){
+
+    if(!haveEmptyParameters(array('currentpassword', 'newpassword', 'email'), $request, $response)){
+        $request_data = $request->getParsedBody();
+
+        $currentpassword = $request_data['currentpassword'];
+        $newpassword = $request_data['newpassword'];
+        $email = $request_data['email'];
+
+        $db = new usersControllers;
+
+        $result = $db->updatePassword($currentpassword, $newpassword, $email);
+
+        if($result == PASSWORD_CHANGED){
+            $response_data = array();
+            $response_data['error'] = false;
+            $response_data['message'] = 'Password changed';
+            $response->write(json_encode($response_data));
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);
+        } else if($result == PASSWORD_DO_NOT_MATCH) {
+            $response_data = array();
+            $response_data['error'] = true;
+            $response_data['message'] = 'You have given wrong password';
+            $response->write(json_encode($response_data));
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);
+        } else if($result == PASSWORD_DO_NOT_CHANGED){
+            $response_data = array();
+            $response_data['error'] = true;
+            $response_data['message'] = 'Some error occurred';
+            $response->write(json_encode($response_data));
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);
+        }
+    }
+
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(422);
+});
+
+function haveEmptyParameters($required_params, $request, $response){
     $error = false;
     $error_params = '';
-    $request_params = $_REQUEST;
+    $request_params = $request->getParsedBody();
 
     foreach($required_params as $param){
         if(!isset($request_params[$param]) || strlen($request_params[$param]) <= 0){
