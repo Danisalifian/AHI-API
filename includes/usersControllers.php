@@ -46,6 +46,23 @@
             return $password;
         }
 
+        public function getAllUsers(){
+            $stmt = $this->con->prepare("select id, email, nama, area, alamat from users;");
+            $stmt->execute();
+            $stmt->bind_result($id, $email, $nama, $area, $alamat);
+            $users = array();
+            while ($stmt->fetch()){
+                $user = array();
+                $user['id'] = $id;
+                $user['email'] = $email;
+                $user['nama'] = $nama;
+                $user['area'] = $area;
+                $user['alamat'] = $alamat;
+                array_push($users, $user);
+            }
+            return $users;
+        }
+
         public function getUserByEmail($email){
             $stmt = $this->con->prepare("select id, email, nama, area, alamat from users where email = ? ");
             $stmt->bind_param("s", $email);
