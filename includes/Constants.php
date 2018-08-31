@@ -16,3 +16,7 @@
     define('PASSWORD_CHANGED', 301);
     define('PASSWORD_DO_NOT_MATCH', 302);
     define('PASSWORD_NOT_CHANGED', 303);
+
+    define('BARANG_CREATED', 401);
+    define('BARANG_FAILURE', 402);
+    define('BARANG_EXISTS', 403);

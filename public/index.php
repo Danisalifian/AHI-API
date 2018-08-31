@@ -5,6 +5,7 @@ use \Psr\Http\Message\ResponseInterface as Response;
 require '../vendor/autoload.php';
 
 require '../includes/usersControllers.php';
+require '../includes/barangControllers.php';
 
 $app = new \Slim\App([
     'settings' =>[
@@ -158,21 +159,21 @@ $app->get('/allUsers', function(Request $request, Response $response){
         ->withStatus(200);
 });
 
-$app->put('/updateUser/{id}', function (Request $request, Response $response, array $args){
+$app->put('/updateUser/{id_user}', function (Request $request, Response $response, array $args){
 
-    $id = $args['id'];
+    $id_user = $args['id_user'];
 
-    if(!haveEmptyParameters(array('email', 'nama', 'area', 'alamat', 'id'), $request, $response)){
+    if(!haveEmptyParameters(array('email', 'nama', 'area', 'alamat', 'id_user'), $request, $response)){
         $request_data = $request->getParsedBody();
         $email = $request_data['email'];
         $nama = $request_data['nama'];
         $area = $request_data['area'];
         $alamat = $request_data['alamat'];
-        $id = $request_data['id'];
+        $id_user = $request_data['id_user'];
 
         $db = new usersControllers;
 
-        if($db->updateUser($email, $nama, $area, $alamat, $id)){
+        if($db->updateUser($email, $nama, $area, $alamat, $id_user)){
             $response_data = array();
             $response_data['error'] = false;
             $response_data['message'] = 'User updated successfully';
@@ -250,15 +251,15 @@ $app->put('/updatePassword', function (Request $request, Response $response){
         ->withStatus(422);
 });
 
-$app->delete('/deleteUser/{id}', function(Request $request, Response $response, array $args){
+$app->delete('/deleteUser/{id_user}', function(Request $request, Response $response, array $args){
 
-    $id = $args['id'];
+    $id_user = $args['id_user'];
     
     $db = new usersControllers;
 
     $response_data = array();
 
-    if($db->deleteUser($id)){
+    if($db->deleteUser($id_user)){
         $response_data['error'] = false;
         $response_data['message'] = 'User has been deleted';
     } else {
@@ -272,6 +273,65 @@ $app->delete('/deleteUser/{id}', function(Request $request, Response $response, 
         ->withHeader('Content-type', 'application/json')
         ->withStatus(200);
 });
+
+$app->post('/createBarang', function(Request $request, Response $response){
+    $request_data = $request->getParsedBody();
+
+    $id_barang = $request_data['id_barang'];
+    $nama_barang = $request_data['nama_barang'];
+    $detail = $request_data['detail'];
+    $harga = $request_data['harga'];
+    $stok_barang = $request_data['stok_barang'];
+
+    $db = new barangControllers;
+
+    $result = $db->createBarang($id_barang, $nama_barang, $detail, $harga, $stok_barang);
+
+    if($result == BARANG_CREATED){
+
+        $message = array();
+        $message['error'] = false;
+        $message['message'] = 'Data barang tersimpan';
+
+        $response->write(json_encode($message));
+
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(200);
+
+    } else if($result == BARANG_FAILURE){
+        
+        $message = array();
+        $message['error'] = true;
+        $message['message'] = 'Some error occurred';
+
+        $response->write(json_encode($message));
+
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(422);
+
+    } else if($result == BARANG_EXISTS){
+
+        $message = array();
+        $message['error'] = true;
+        $message['message'] = 'Barang telah ada';
+
+        $response->write(json_encode($message));
+
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(422);
+
+    }
+
+    $response->write(json_encode($message));
+
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(422);
+});
+
 function haveEmptyParameters($required_params, $request, $response){
     $error = false;
     $error_params = '';

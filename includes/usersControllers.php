@@ -18,7 +18,7 @@
                 if($stmt->execute()){
                     return USER_CREATED;
                 } else {
-                    return USER_FIALURE;
+                    return USER_FAILURE;
                 }
             }
             return USER_EXISTS;
@@ -47,13 +47,13 @@
         }
 
         public function getAllUsers(){
-            $stmt = $this->con->prepare("select id, email, nama, area, alamat from users;");
+            $stmt = $this->con->prepare("select id_user, email, nama, area, alamat from users;");
             $stmt->execute();
-            $stmt->bind_result($id, $email, $nama, $area, $alamat);
+            $stmt->bind_result($id_user, $email, $nama, $area, $alamat);
             $users = array();
             while ($stmt->fetch()){
                 $user = array();
-                $user['id'] = $id;
+                $user['id_user'] = $id_user;
                 $user['email'] = $email;
                 $user['nama'] = $nama;
                 $user['area'] = $area;
@@ -64,13 +64,13 @@
         }
 
         public function getUserByEmail($email){
-            $stmt = $this->con->prepare("select id, email, nama, area, alamat from users where email = ? ");
+            $stmt = $this->con->prepare("select id_user, email, nama, area, alamat from users where email = ? ");
             $stmt->bind_param("s", $email);
             $stmt->execute();
-            $stmt->bind_result($id, $email, $nama, $area, $alamat);
+            $stmt->bind_result($id_user, $email, $nama, $area, $alamat);
             $stmt->fetch();
             $user = array();
-            $user['id'] = $id;
+            $user['id_user'] = $id_user;
             $user['email'] = $email;
             $user['nama'] = $nama;
             $user['area'] = $area;
@@ -78,9 +78,9 @@
             return $user;
         }
 
-        public function updateUser($email, $nama, $area, $alamat, $id){
-            $stmt = $this->con->prepare("update users set email = ?, nama = ?, area = ?, alamat = ? where id = ?");
-            $stmt->bind_param("sssss", $email, $nama, $area, $alamat, $id);
+        public function updateUser($email, $nama, $area, $alamat, $id_user){
+            $stmt = $this->con->prepare("update users set email = ?, nama = ?, area = ?, alamat = ? where id_user = ?");
+            $stmt->bind_param("sssss", $email, $nama, $area, $alamat, $id_user);
             if($stmt->execute())
                 return true;
             return false;
@@ -104,9 +104,9 @@
             }
         }
 
-        public function deleteUser($id){
-            $stmt = $this->con->prepare("delete from users where id = ?");
-            $stmt->bind_param("i", $id);
+        public function deleteUser($id_user){
+            $stmt = $this->con->prepare("delete from users where id_user = ?");
+            $stmt->bind_param("i", $id_user);
             if($stmt->execute())
                 return true;
             return false;
@@ -114,7 +114,7 @@
         }
 
         private function isEmailExist($email){
-            $stmt = $this->con->prepare("select id from users where email = ? ");
+            $stmt = $this->con->prepare("select id_user from users where email = ? ");
             $stmt->bind_param("s",$email);
             $stmt->execute();
             $stmt->store_result();
