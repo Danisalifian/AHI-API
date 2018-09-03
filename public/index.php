@@ -332,6 +332,24 @@ $app->post('/createBarang', function(Request $request, Response $response){
             ->withStatus(422);
 });
 
+$app->get('/allBarang', function(Request $request, Response $response){
+
+    $db = new barangControllers;
+
+    $barangs = $db->getAllBarang();
+
+    $response_data = array();
+
+    $response_data['error'] = false;
+    $response_data['barangs'] = $barangs;
+
+    $response->write(json_encode($response_data));
+
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(200);
+});
+
 function haveEmptyParameters($required_params, $request, $response){
     $error = false;
     $error_params = '';

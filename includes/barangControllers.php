@@ -25,6 +25,23 @@
 
             return BARANG_EXISTS;
         }
+        
+        public function getAllBarang(){
+            $stmt = $this->con->prepare("select id_barang, nama_barang, detail, harga, stok_barang from barang");
+            $stmt->execute();
+            $stmt->bind_result($id_barang,$nama_barang,$detail,$harga,$stok_barang);
+            $barangs = array();
+            while ($stmt->fetch()){
+                $barang = array();
+                $barang['id_barang'] = $id_barang;
+                $barang['nama_barang'] = $nama_barang;
+                $barang['detail'] = $detail;
+                $barang['harga'] = $harga;
+                $barang['stok_barang'] = $stok_barang;
+                array_push($barangs, $barang);
+            }
+            return $barangs;
+        }
 
         private function isBarangExists($nama_barang){
             $stmt = $this->con->prepare("select id_barang from barang where nama_barang = ?");
