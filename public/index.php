@@ -350,6 +350,27 @@ $app->get('/allBarang', function(Request $request, Response $response){
         ->withStatus(200);
 });
 
+$app->delete('/deleteBarang/{id_barang}', function(Request $request, Response $response, array $args){
+
+    $id_barang = $args['id_barang'];
+
+    $db = new barangControllers;
+
+    if($db->deleteBarang($id_barang)){
+        $response_data['error'] = false;
+        $response_data['message'] = 'Barang telah dihapus';
+    } else {
+        $response_data['error'] = true;
+        $response_data['message'] = 'Please try again later';
+    }
+
+    $response->write(json_encode($response_data));
+
+    return $response
+        ->withHeader('Content-type', 'application/json')
+        ->withStatus(200);
+});
+
 function haveEmptyParameters($required_params, $request, $response){
     $error = false;
     $error_params = '';

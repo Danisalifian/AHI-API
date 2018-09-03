@@ -43,6 +43,14 @@
             return $barangs;
         }
 
+        public function deleteBarang($id_barang){
+            $stmt = $this->con->prepare("delete from barang where id_barang = ?");
+            $stmt->bind_param("s", $id_barang);
+            if ($stmt->execute())
+                return true;
+            return false;
+        }
+
         private function isBarangExists($nama_barang){
             $stmt = $this->con->prepare("select id_barang from barang where nama_barang = ?");
             $stmt->bind_param("s", $nama_barang);
